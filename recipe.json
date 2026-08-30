@@ -1,0 +1,543 @@
+{
+  "name": "Daily FX-rate pipeline with data-quality guardrail",
+  "description": "",
+  "version": 15,
+  "private": false,
+  "concurrency": 1,
+  "code": {
+    "number": 0,
+    "provider": "clock",
+    "name": "scheduled_event",
+    "as": "6850425d",
+    "keyword": "trigger",
+    "dynamicPickListSelection": {
+      "time_unit": "Days"
+    },
+    "input": {
+      "time_unit": "days",
+      "trigger_every": "1",
+      "trigger_at": "09:00:00.000"
+    },
+    "extended_input_schema": [
+      {
+        "control_type": "integer",
+        "default": "5",
+        "enforce_template_mode": true,
+        "extends_schema": true,
+        "hint": "Define repeating schedule. Enter whole numbers only.This field can be set to a minimum of 5 minutes.",
+        "label": "Trigger every",
+        "name": "trigger_every",
+        "optional": false,
+        "suffix": {
+          "text": "days"
+        },
+        "type": "string"
+      },
+      {
+        "change_on_blur": true,
+        "control_type": "time",
+        "enforce_template_mode": true,
+        "extends_schema": true,
+        "hint": "Set a time to schedule the job using supported formats only. <a href=\"https://docs.workato.com/features/scheduler.html#supported-datetime-formats\" target=\"_blank\">Learn more</a>",
+        "label": "Trigger at",
+        "name": "trigger_at",
+        "optional": false,
+        "type": "string"
+      },
+      {
+        "control_type": "select",
+        "hint": "Select the timezone to use. Leave it blank to use <b>{{authUser.account_timezone}}</b>",
+        "label": "Timezone",
+        "name": "timezone",
+        "optional": true,
+        "pick_list": "timezone_id_global_pick_list",
+        "pick_list_connection_less": true,
+        "type": "string"
+      },
+      {
+        "control_type": "date_time",
+        "enforce_template_mode": true,
+        "extends_schema": true,
+        "hint": "Set date and time to start or leave blank to start immediately. <b>Once recipe has been run or tested, value cannot be changed.</b>",
+        "label": "Start after",
+        "name": "start_after",
+        "optional": true,
+        "parse_output": "date_time_conversion",
+        "since_field": true,
+        "type": "date_time",
+        "ignore_timezone": true,
+        "render_input": "date_time_conversion"
+      }
+    ],
+    "block": [
+      {
+        "number": 1,
+        "provider": "rest",
+        "name": "make_request_v2",
+        "as": "98363809",
+        "keyword": "action",
+        "toggleCfg": {
+          "response.ignore_http_errors": true,
+          "disable_retries": true
+        },
+        "input": {
+          "request_name": "Send request",
+          "request": {
+            "method": "GET",
+            "content_type": "application/json",
+            "url": "/latest?from=USD&to=EUR,GBP,PLN"
+          },
+          "response": {
+            "output_type": "json",
+            "expected_encoding": "UTF-8",
+            "ignore_http_errors": "false",
+            "response_schema": "[{\"control_type\":\"number\",\"label\":\"Amount\",\"parse_output\":\"float_conversion\",\"optional\":true,\"type\":\"number\",\"name\":\"amount\"},{\"control_type\":\"text\",\"label\":\"Base\",\"optional\":true,\"type\":\"string\",\"name\":\"base\"},{\"control_type\":\"text\",\"label\":\"Date\",\"optional\":true,\"type\":\"string\",\"name\":\"date\"},{\"properties\":[{\"control_type\":\"number\",\"label\":\"EUR\",\"parse_output\":\"float_conversion\",\"optional\":true,\"type\":\"number\",\"name\":\"EUR\"},{\"control_type\":\"number\",\"label\":\"GBP\",\"parse_output\":\"float_conversion\",\"optional\":true,\"type\":\"number\",\"name\":\"GBP\"},{\"control_type\":\"number\",\"label\":\"PLN\",\"parse_output\":\"float_conversion\",\"optional\":true,\"type\":\"number\",\"name\":\"PLN\"}],\"label\":\"Rates\",\"optional\":true,\"type\":\"object\",\"name\":\"rates\"}]"
+          },
+          "wait_for_response": "false",
+          "completion_threshold_seconds": "3600",
+          "disable_retries": "false",
+          "enable_streaming": "false"
+        },
+        "extended_output_schema": [
+          {
+            "label": "Headers",
+            "name": "headers",
+            "properties": [
+
+            ],
+            "type": "object"
+          },
+          {
+            "label": "Response",
+            "name": "response",
+            "properties": [
+              {
+                "control_type": "number",
+                "label": "Amount",
+                "parse_output": "float_conversion",
+                "optional": true,
+                "type": "number",
+                "name": "amount"
+              },
+              {
+                "control_type": "text",
+                "label": "Base",
+                "optional": true,
+                "type": "string",
+                "name": "base"
+              },
+              {
+                "control_type": "text",
+                "label": "Date",
+                "optional": true,
+                "type": "string",
+                "name": "date"
+              },
+              {
+                "properties": [
+                  {
+                    "control_type": "number",
+                    "label": "EUR",
+                    "parse_output": "float_conversion",
+                    "optional": true,
+                    "type": "number",
+                    "name": "EUR"
+                  },
+                  {
+                    "control_type": "number",
+                    "label": "GBP",
+                    "parse_output": "float_conversion",
+                    "optional": true,
+                    "type": "number",
+                    "name": "GBP"
+                  },
+                  {
+                    "control_type": "number",
+                    "label": "PLN",
+                    "parse_output": "float_conversion",
+                    "optional": true,
+                    "type": "number",
+                    "name": "PLN"
+                  }
+                ],
+                "label": "Rates",
+                "optional": true,
+                "type": "object",
+                "name": "rates"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "extended_input_schema": [
+          {
+            "label": "Response",
+            "name": "response",
+            "override": true,
+            "properties": [
+              {
+                "control_type": "select",
+                "label": "Response content type",
+                "pick_list": [
+                  [
+                    "Text",
+                    "rawdatatxt"
+                  ],
+                  [
+                    "Binary",
+                    "rawdata"
+                  ],
+                  [
+                    "JSON",
+                    "json"
+                  ],
+                  [
+                    "XML",
+                    "xml2"
+                  ],
+                  [
+                    "Multipart",
+                    "multipart"
+                  ]
+                ],
+                "hint": "Select expected format of data response type, e.g. JSON or XML. <a href=\"https://docs.workato.com/developing-connectors/http.html#response-type\" target=\"_blank\">Learn more</a>",
+                "default": "json",
+                "extends_schema": true,
+                "type": "string",
+                "name": "output_type"
+              },
+              {
+                "control_type": "select",
+                "label": "Encoding",
+                "pick_list": "supported_encodings_without_binary_global_pick_list",
+                "pick_list_connection_less": true,
+                "optional": true,
+                "default": "UTF-8",
+                "hint": "Default encoding type is set to UTF-8, and typically doesn't need to be changed. <a href=\"https://docs.workato.com/developing-connectors/http.html#response-type\" target=\"_blank\">Learn more</a>",
+                "type": "string",
+                "name": "expected_encoding"
+              },
+              {
+                "control_type": "schema-designer",
+                "label": "Response schema",
+                "sample_data_type": "json_http",
+                "extends_schema": true,
+                "empty_schema_title": "Describe all fields in your response.",
+                "optional": true,
+                "sticky": true,
+                "type": "string",
+                "name": "response_schema"
+              },
+              {
+                "control_type": "schema-designer",
+                "label": "HTTP response headers",
+                "extends_schema": true,
+                "empty_schema_title": "Describe all the response headers",
+                "optional": true,
+                "sticky": true,
+                "type": "string",
+                "name": "headers_schema"
+              },
+              {
+                "control_type": "schema-designer",
+                "label": "Multipart part headers",
+                "extends_schema": true,
+                "empty_schema_title": "Describe headers within each multipart part",
+                "optional": true,
+                "sticky": true,
+                "hint": "Define the headers that appear in each part of the multipart response (e.g., Content-Type, Content-ID)",
+                "ngIf": "input.response.output_type == 'multipart'",
+                "type": "string",
+                "name": "part_headers_schema"
+              },
+              {
+                "control_type": "checkbox",
+                "label": "Mark non-2xx response codes as success?",
+                "default": "false",
+                "hint": "If <b>yes</b>, non 2xx response codes returned will be marked as a successful action. If <b>no</b>, non 2xx response codes returned will be marked as an error.",
+                "optional": true,
+                "toggle_hint": "Select from option list",
+                "toggle_field": {
+                  "label": "Mark non-2xx response codes as success?",
+                  "control_type": "text",
+                  "toggle_hint": "Use custom value",
+                  "default": false,
+                  "hint": "If <b>yes</b>, non 2xx response codes returned will be marked as a successful action. If <b>no</b>, non 2xx response codes returned will be marked as an error.",
+                  "optional": true,
+                  "render_input": null,
+                  "parse_output": null,
+                  "type": "boolean",
+                  "name": "ignore_http_errors"
+                },
+                "type": "boolean",
+                "name": "ignore_http_errors"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "uuid": "eedaa9cc-8837-4dcd-b107-bd07090c308f",
+        "wizardFinished": true
+      },
+      {
+        "number": 2,
+        "keyword": "if",
+        "input": {
+          "type": "compound",
+          "operand": "and",
+          "conditions": [
+            {
+              "operand": "present",
+              "lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"rest\",\"line\":\"98363809\",\"path\":[\"response\",\"rates\",\"EUR\"]}')}",
+              "uuid": "660d5c41-0a7e-4f33-a1ee-562395803298"
+            },
+            {
+              "operand": "present",
+              "lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"rest\",\"line\":\"98363809\",\"path\":[\"response\",\"rates\",\"GBP\"]}')}",
+              "rhs": "",
+              "uuid": "7c28b3b8-3608-40bd-8842-b2b22cbadf34"
+            },
+            {
+              "operand": "present",
+              "lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"rest\",\"line\":\"98363809\",\"path\":[\"response\",\"rates\",\"PLN\"]}')}",
+              "rhs": "",
+              "uuid": "60ffa428-deff-48b9-9792-63b0b07fe7ad"
+            }
+          ]
+        },
+        "block": [
+          {
+            "number": 3,
+            "provider": "google_sheets",
+            "name": "add_spreadsheet_row_v4",
+            "as": "acaa26c5",
+            "keyword": "action",
+            "dynamicPickListSelection": {
+              "spreadsheet": "fx_rates"
+            },
+            "toggleCfg": {
+              "is_top_left": true
+            },
+            "input": {
+              "team_drives": "my_drive",
+              "spreadsheet": "17zbLecxh70JqmPqlalxl9cTrN5_8zwAiclRNe4iOU0U",
+              "is_top_left": "false",
+              "sheet": "rates",
+              "data": {
+                "col_1": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"rest\",\"line\":\"98363809\",\"path\":[\"response\",\"date\"]}')}",
+                "col_2": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"rest\",\"line\":\"98363809\",\"path\":[\"response\",\"rates\",\"EUR\"]}')}",
+                "col_3": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"rest\",\"line\":\"98363809\",\"path\":[\"response\",\"rates\",\"GBP\"]}')}",
+                "col_4": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"rest\",\"line\":\"98363809\",\"path\":[\"response\",\"rates\",\"PLN\"]}')}"
+              }
+            },
+            "extended_input_schema": [
+              {
+                "control_type": "select",
+                "extends_schema": true,
+                "hint": "Select a sheet to add row to. The sheet must have at least one header row. <a href='https://docs.workato.com/connectors/google-sheets/action-add-row.html#setting-up-the-google-sheet' target='_blank'>Learn more</a>",
+                "label": "Sheet",
+                "name": "sheet",
+                "optional": false,
+                "pick_list": [
+                  [
+                    "rates",
+                    "rates"
+                  ],
+                  [
+                    "errors",
+                    "errors"
+                  ]
+                ],
+                "toggle_field": {
+                  "control_type": "text",
+                  "label": "Sheet name",
+                  "toggle_hint": "Use sheet name",
+                  "extends_schema": true,
+                  "change_on_blur": true,
+                  "toggle_to_secondary_hint": "Use sheet name",
+                  "toggle_to_primary_hint": "Select a sheet",
+                  "hint": "Use <b>Sheet name</b> pill from the output of other Google Sheets’ triggers/actions. Or enter sheet name manually. The sheet must have at least 1 header row in input field.",
+                  "type": "string",
+                  "name": "sheet_name"
+                },
+                "toggle_hint": "Select a sheet",
+                "type": "string"
+              },
+              {
+                "hint": "Input values of the new row.",
+                "label": "Columns",
+                "name": "data",
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "date",
+                    "sticky": true,
+                    "optional": true,
+                    "type": "string",
+                    "name": "col_1"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "usd_eur",
+                    "sticky": true,
+                    "optional": true,
+                    "type": "string",
+                    "name": "col_2"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "usd_gbp",
+                    "sticky": true,
+                    "optional": true,
+                    "type": "string",
+                    "name": "col_3"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "usd_pln",
+                    "sticky": true,
+                    "optional": true,
+                    "type": "string",
+                    "name": "col_4"
+                  }
+                ],
+                "type": "object"
+              }
+            ],
+            "uuid": "3f0edda5-8cb2-4028-b6b4-b5cad5019fa1"
+          },
+          {
+            "number": 4,
+            "keyword": "else",
+            "input": {
+            },
+            "block": [
+              {
+                "number": 5,
+                "provider": "google_sheets",
+                "name": "add_spreadsheet_row_v4",
+                "as": "45bcdcb7",
+                "keyword": "action",
+                "dynamicPickListSelection": {
+                  "spreadsheet": "fx_rates"
+                },
+                "toggleCfg": {
+                  "is_top_left": true
+                },
+                "input": {
+                  "team_drives": "my_drive",
+                  "is_top_left": "false",
+                  "spreadsheet": "17zbLecxh70JqmPqlalxl9cTrN5_8zwAiclRNe4iOU0U",
+                  "sheet": "errors",
+                  "data": {
+                    "col_1": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"rest\",\"line\":\"98363809\",\"path\":[\"response\",\"date\"]}')}",
+                    "col_3": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"rest\",\"line\":\"98363809\",\"path\":[\"body\"]}')}",
+                    "col_2": "Missing or invalid rate"
+                  }
+                },
+                "extended_input_schema": [
+                  {
+                    "control_type": "select",
+                    "extends_schema": true,
+                    "hint": "Select a sheet to add row to. The sheet must have at least one header row. <a href='https://docs.workato.com/connectors/google-sheets/action-add-row.html#setting-up-the-google-sheet' target='_blank'>Learn more</a>",
+                    "label": "Sheet",
+                    "name": "sheet",
+                    "optional": false,
+                    "pick_list": [
+                      [
+                        "rates",
+                        "rates"
+                      ],
+                      [
+                        "errors",
+                        "errors"
+                      ]
+                    ],
+                    "toggle_field": {
+                      "control_type": "text",
+                      "label": "Sheet name",
+                      "toggle_hint": "Use sheet name",
+                      "extends_schema": true,
+                      "change_on_blur": true,
+                      "toggle_to_secondary_hint": "Use sheet name",
+                      "toggle_to_primary_hint": "Select a sheet",
+                      "hint": "Use <b>Sheet name</b> pill from the output of other Google Sheets’ triggers/actions. Or enter sheet name manually. The sheet must have at least 1 header row in input field.",
+                      "type": "string",
+                      "name": "sheet_name"
+                    },
+                    "toggle_hint": "Select a sheet",
+                    "type": "string"
+                  },
+                  {
+                    "hint": "Input values of the new row.",
+                    "label": "Columns",
+                    "name": "data",
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "date ",
+                        "sticky": true,
+                        "optional": true,
+                        "type": "string",
+                        "name": "col_1"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "reason",
+                        "sticky": true,
+                        "optional": true,
+                        "type": "string",
+                        "name": "col_2"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "raw_response",
+                        "sticky": true,
+                        "optional": true,
+                        "type": "string",
+                        "name": "col_3"
+                      }
+                    ],
+                    "type": "object"
+                  }
+                ],
+                "uuid": "5ea39a90-3805-40ab-a088-c2df155231c5"
+              }
+            ],
+            "uuid": "c22e24d3-cf9e-4dce-b8d4-123847d9f908"
+          }
+        ],
+        "uuid": "cee088da-c1e1-4383-b6ce-aff856219ed4"
+      }
+    ],
+    "uuid": "9eb7bc31-9d9b-46e4-ba80-7b1e845be822"
+  },
+  "config": [
+    {
+      "keyword": "application",
+      "provider": "clock",
+      "skip_validation": false,
+      "account_id": null
+    },
+    {
+      "keyword": "application",
+      "provider": "rest",
+      "skip_validation": false,
+      "account_id": {
+        "zip_name": "fx_api_frankfuter.connection.json",
+        "name": "FX API (frankfuter)",
+        "folder": ""
+      }
+    },
+    {
+      "keyword": "application",
+      "provider": "google_sheets",
+      "skip_validation": false,
+      "account_id": {
+        "zip_name": "google_sheets_goweraaimable.connection.json",
+        "name": " Google Sheets (goweraaimable)",
+        "folder": ""
+      }
+    }
+  ]
+}

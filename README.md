@@ -40,6 +40,14 @@ only `EUR` came back (GBP/PLN missing), which is exactly why it was flagged:
 
 ![Errors tab — guardrail caught missing rates](screenshots/errors-tab-guardrail-caught.png)
 
+## The recipe
+
+- [`recipe.json`](recipe.json) — the exported recipe manifest (human-readable).
+- [`fx-pipeline.workato.zip`](fx-pipeline.workato.zip) — the full export package
+  (recipe + connection definitions), importable via **Recipes → Import** in any Workato
+  workspace. The connection files carry only names/providers — **no credentials** — so
+  after importing you re-point it at your own HTTP and Google Sheets connections.
+
 ## How it was built
 
 Step-by-step build notes — including the two bugs I hit and how I fixed them — are in
