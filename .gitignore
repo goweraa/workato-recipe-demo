@@ -1,0 +1,6 @@
+# Never commit secrets
+.env
+*.env
+# Workato exports should not contain secrets, but ignore any local credential dumps
+*secret*
+*token*
